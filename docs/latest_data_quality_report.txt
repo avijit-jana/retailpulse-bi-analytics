@@ -1,0 +1,12 @@
+================================================================================
+RETAILPULSE BI ANALYTICS — DATA-QUALITY VALIDATION REPORT
+================================================================================
+Execution Timestamp : 2026-11-05 05:38:11 UTC
+Tables Checked      : Sales, Customers, Products, Regions, Date
+Total Rules Checked : 47
+Passed Checks       : 47
+Failed Checks / Issues Found : 0
+Overall Status      : PASSED ✅
+--------------------------------------------------------------------------------
+No issues found! All data-quality constraints passed successfully.
+================================================================================

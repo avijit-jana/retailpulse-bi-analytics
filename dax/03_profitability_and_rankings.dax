@@ -1,0 +1,79 @@
+/*
+================================================================================
+RetailPulse BI Analytics — Category, Customer & Ranking DAX Measures
+================================================================================
+Assumptions:
+1. Customers dimension table 'Customers' with column Customers[CustomerID], Customers[Segment].
+2. Products dimension table 'Products' with column Products[ProductID], Products[ProductName], Products[Category].
+3. Relationships:
+   - Customers[CustomerID] 1:* Sales[CustomerID]
+   - Products[ProductID] 1:* Sales[ProductID]
+================================================================================
+*/
+
+-- Category Profitability
+-- Evaluates profit for the currently filtered Product Category.
+-- Dependencies: [Total Profit], Products[Category]
+Category Profitability =
+CALCULATE(
+    [Total Profit],
+    KEEPFILTERS(Products[Category])
+)
+
+-- Customer Contribution %
+-- Computes the current customer's (or filtered customer segment's) share of total sales across all customers.
+-- Dependencies: [Total Sales], Customers table
+Customer Contribution % =
+VAR CurrentSales = [Total Sales]
+VAR AllCustomerSales = CALCULATE([Total Sales], ALL(Customers))
+RETURN
+    DIVIDE(
+        CurrentSales,
+        AllCustomerSales,
+        0
+    )
+
+-- Top Product Sales Rank
+-- Computes numerical rank of products based on Total Sales within current filter context.
+-- Dependencies: [Total Sales], Products[ProductName]
+Top Product Rank by Sales =
+IF(
+    ISBLANK([Total Sales]),
+    BLANK(),
+    RANKX(
+        ALLSELECTED(Products[ProductName]),
+        [Total Sales],
+        ,
+        DESC,
+        Dense
+    )
+)
+
+-- Top Product Profit Rank
+-- Computes numerical rank of products based on Total Profit.
+-- Dependencies: [Total Profit], Products[ProductName]
+Top Product Rank by Profit =
+IF(
+    ISBLANK([Total Profit]),
+    BLANK(),
+    RANKX(
+        ALLSELECTED(Products[ProductName]),
+        [Total Profit],
+        ,
+        DESC,
+        Dense
+    )
+)
+
+-- Category Contribution %
+-- Share of total revenue contributed by the active Category.
+-- Dependencies: [Total Sales], Products[Category]
+Category Sales Contribution % =
+VAR CategorySales = [Total Sales]
+VAR TotalSalesAllCategories = CALCULATE([Total Sales], ALL(Products[Category]))
+RETURN
+    DIVIDE(
+        CategorySales,
+        TotalSalesAllCategories,
+        0
+    )

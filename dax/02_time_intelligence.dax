@@ -1,0 +1,61 @@
+/*
+================================================================================
+RetailPulse BI Analytics — Time Intelligence DAX Measures
+================================================================================
+Assumptions:
+1. Calendar dimension table is named 'Date' marked as a Date Table in Power BI.
+2. Contiguous date column is Date[Date].
+3. Active 1-to-many relationship exists from Date[Date] to Sales[OrderDate].
+4. Date[Year], Date[Quarter], Date[Month], and Date[MonthNumber] are available.
+================================================================================
+*/
+
+-- Monthly Sales
+-- Dependencies: [Total Sales], Date[Year], Date[Month]
+Monthly Sales =
+CALCULATE(
+    [Total Sales],
+    ALLEXCEPT(Date, Date[Year], Date[Month], Date[MonthNumber])
+)
+
+-- Quarterly Sales
+-- Dependencies: [Total Sales], Date[Year], Date[Quarter]
+Quarterly Sales =
+CALCULATE(
+    [Total Sales],
+    ALLEXCEPT(Date, Date[Year], Date[Quarter])
+)
+
+-- Previous Year Sales (PY Sales)
+-- Dependencies: [Total Sales], Date[Date]
+Previous Year Sales =
+CALCULATE(
+    [Total Sales],
+    SAMEPERIODLASTYEAR(Date[Date])
+)
+
+-- Year-over-Year Sales Growth ($ Difference)
+-- Dependencies: [Total Sales], [Previous Year Sales]
+YoY Sales Growth =
+IF(
+    ISBLANK([Previous Year Sales]),
+    BLANK(),
+    [Total Sales] - [Previous Year Sales]
+)
+
+-- Year-over-Year Sales Growth %
+-- Dependencies: [Total Sales], [Previous Year Sales]
+YoY Sales Growth % =
+DIVIDE(
+    [Total Sales] - [Previous Year Sales],
+    [Previous Year Sales],
+    BLANK()
+)
+
+-- Year-to-Date (YTD) Sales
+-- Dependencies: [Total Sales], Date[Date]
+YTD Sales =
+TOTALYTD(
+    [Total Sales],
+    Date[Date]
+)
