@@ -1,0 +1,69 @@
+/*
+================================================================================
+RetailPulse BI Analytics — Base DAX Measures
+================================================================================
+Assumptions:
+1. Fact table is named 'Sales' with columns:
+   - Sales[Quantity]
+   - Sales[UnitPrice]
+   - Sales[Discount]
+   - Sales[ProductID]
+   - Sales[CustomerID]
+   - Sales[OrderID]
+2. Products table is named 'Products' with column:
+   - Products[CostPrice]
+3. Total Sales reflects net revenue after line-item discounts:
+   Net Revenue = Quantity * UnitPrice * (1 - Discount)
+4. Total Cost evaluates product unit cost against sold quantity:
+   Cost = Quantity * RELATED(Products[CostPrice])
+================================================================================
+*/
+
+-- Total Sales (Net Revenue)
+-- Dependencies: Sales[Quantity], Sales[UnitPrice], Sales[Discount]
+Total Sales =
+SUMX(
+    Sales,
+    Sales[Quantity] * Sales[UnitPrice] * (1 - Sales[Discount])
+)
+
+-- Total Cost
+-- Dependencies: Sales[Quantity], Products[CostPrice], Relationship: Sales[ProductID] -> Products[ProductID]
+Total Cost =
+SUMX(
+    Sales,
+    Sales[Quantity] * RELATED(Products[CostPrice])
+)
+
+-- Total Profit
+-- Dependencies: [Total Sales], [Total Cost]
+Total Profit =
+[Total Sales] - [Total Cost]
+
+-- Profit Margin %
+-- Dependencies: [Total Profit], [Total Sales]
+Profit Margin % =
+DIVIDE(
+    [Total Profit],
+    [Total Sales],
+    0
+)
+
+-- Total Orders
+-- Dependencies: Sales[OrderID]
+Total Orders =
+DISTINCTCOUNT(Sales[OrderID])
+
+-- Total Customers
+-- Dependencies: Sales[CustomerID] (or Customers[CustomerID])
+Total Customers =
+DISTINCTCOUNT(Sales[CustomerID])
+
+-- Average Order Value (AOV)
+-- Dependencies: [Total Sales], [Total Orders]
+Average Order Value =
+DIVIDE(
+    [Total Sales],
+    [Total Orders],
+    0
+)
